@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: envoy-proxy
+  name: envoy-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: envoy-proxy
+  template:
+    metadata:
+      labels:
+        app: envoy-proxy
+      namespace: default
+    spec:
+      containers:
+      - args:
+        - -c
+        - /etc/envoy/config.yaml
+        - --service-cluster
+        - envoy-proxy
+        command:
+        - envoy
+        image: envoyproxy/envoy:v1.12.2
+        imagePullPolicy: Always
+        name: envoy
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        - containerPort: 8001
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/envoy
+          name: envoy-config
+      restartPolicy: Always
+      volumes:
+      - configMap:
+          name: envoy-config
+        name: envoy-config
